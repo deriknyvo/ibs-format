@@ -1,13 +1,15 @@
 function ibsFormat(value, arr, linky, escaping) {
   let output = null;
+
   escaping = escaping && escaping.allowXssEscaping == false ? false : true;
+  
   if (value) {
     if (escaping) {
       value = value.replace(/</g, "&lt;");
       value = value.replace(/>/g, "&gt;");
     }
-    value = value.replace(/\n/g, " <br> ");
   }
+
   if (value != "" && value != null && value != undefined && arr && arr.length > 0) {
     if (arr[0].constructor === Array) {
       arr.map(function (e) {
@@ -34,8 +36,10 @@ function ibsFormat(value, arr, linky, escaping) {
   } else {
     output = null;
   }
+
   if (value != "" && value != null && value != undefined && linky && linky.detectLinks == true) {
     let targ;
+
     if (linky.target != null && linky.target != "") {
       targ = linky.target;
     } else {
@@ -43,9 +47,7 @@ function ibsFormat(value, arr, linky, escaping) {
     }
     output = linkfy(value, targ);
   }
-  if (output) {
-    output = output.replace(/ <br> /g, "<br>");
-  }
+
   return output ? output.trim() : "";
 }
 
@@ -282,31 +284,37 @@ function linkfy(text, target) {
   let emailRegexx = new RegExp(emailRegex);
   let a = text.split(" ");
   let finalText = "";
+
   a.map(function (part, index) {
     if (part != " " && part != "" && part != undefined && part != "<br>") {
       if (part.match(emailRegexx)) {
         let ref = part;
-        ref = ref.replace(/<[^>]*>?/gm, "");
-        a[index] = "<a href='mailto:" + ref + "' target='" + target + "'>" + part + "</a>";
+        ref = reverseLinkFormatting(ref);
+        a[index] = "<a href='mailto:" + ref + "' target='" + target + "'>" + ref + "</a>";
+
       } else if (part.match(looseUrlRegex)) {
         let ref = part;
-        ref = ref.replace(/<[^>]*>?/gm, "");
-        a[index] = "<a href='" + ref + "' target='" + target + "'>" + part + "</a>";
+        ref = reverseLinkFormatting(ref);
+        a[index] = "<a href='" + ref + "' target='" + target + "'>" + ref + "</a>";
+
       } else if (part.match(strictUrlRegex)) {
         let ref = part;
-        ref = ref.replace(/<[^>]*>?/gm, "");
+
+        ref = reverseLinkFormatting(ref);
         if (ref.match(httpVerify)) {
-          a[index] = "<a href='" + ref + "' target='" + target + "'>" + part + "</a>";
+          a[index] = "<a href='" + ref + "' target='" + target + "'>" + ref + "</a>";
         } else {
-          a[index] = "<a href='http://" + ref + "' target='" + target + "'>" + part + "</a>";
+          a[index] = "<a href='http://" + ref + "' target='" + target + "'>" + ref + "</a>";
         }
+
       } else if (part.match(ip4Regex)) {
         let ref = part;
-        ref = ref.replace(/<[^>]*>?/gm, "");
-        a[index] = "<a href='http://" + ref + "' target='" + target + "'>" + part + "</a>";
+        ref = reverseLinkFormatting(ref);
+        a[index] = "<a href='http://" + ref + "' target='" + target + "'>" + ref + "</a>";
       }
     }
   });
+
   a.forEach(function (e) {
     if (e == "") {
       finalText = finalText + " ";
@@ -315,6 +323,22 @@ function linkfy(text, target) {
     }
   });
   return finalText;
+}
+
+function reverseLinkFormatting(link) {
+  let linkUnformatting = link.replace('<i>', '_');
+
+  linkUnformatting = linkUnformatting.replace('</i>', '_');
+
+  linkUnformatting = linkUnformatting.replace('<b>', '*');
+
+  linkUnformatting = linkUnformatting.replace('</b>', '*');
+
+  linkUnformatting = linkUnformatting.replace('<strike>', '~');
+
+  linkUnformatting = linkUnformatting.replace('</strike>', '~');
+
+  return linkUnformatting;
 }
 
 module.exports.ibsFormat = ibsFormat;
