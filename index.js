@@ -8,8 +8,8 @@ function ibsFormat(value, arr, linky, escaping) {
       value = value.replace(/</g, "&lt;");
       value = value.replace(/>/g, "&gt;");
     }
+    value = value.replace(/\n/g, " <br> ");
   }
-
   if (value != "" && value != null && value != undefined && arr && arr.length > 0) {
     if (arr[0].constructor === Array) {
       arr.map(function (e) {
@@ -36,16 +36,17 @@ function ibsFormat(value, arr, linky, escaping) {
   } else {
     output = null;
   }
-
   if (value != "" && value != null && value != undefined && linky && linky.detectLinks == true) {
     let targ;
-
     if (linky.target != null && linky.target != "") {
       targ = linky.target;
     } else {
       targ = "_self";
     }
     output = linkfy(value, targ);
+  }
+  if (output) {
+    output = output.replace(/ <br> /g, "\n");
   }
 
   return output ? output.trim() : "";
@@ -116,7 +117,6 @@ function doubleAstericHandler(text, tag, iden, trim, space) {
 
   return finalText;
 }
-
 
 function astericHandler(text, tag, iden, trim, space) {
   let box = [];
@@ -193,7 +193,6 @@ function astericHandler(text, tag, iden, trim, space) {
   }
   return finalText;
 }
-
 
 function getFormat(text, tag, iden, trim, space) {
   let box = [];
@@ -287,26 +286,23 @@ function linkfy(text, target) {
 
   a.map(function (part, index) {
     if (part != " " && part != "" && part != undefined && part != "<br>") {
+
       if (part.match(emailRegexx)) {
         let ref = part;
         ref = reverseLinkFormatting(ref);
         a[index] = "<a href='mailto:" + ref + "' target='" + target + "'>" + ref + "</a>";
-
       } else if (part.match(looseUrlRegex)) {
         let ref = part;
         ref = reverseLinkFormatting(ref);
         a[index] = "<a href='" + ref + "' target='" + target + "'>" + ref + "</a>";
-
       } else if (part.match(strictUrlRegex)) {
         let ref = part;
-
         ref = reverseLinkFormatting(ref);
         if (ref.match(httpVerify)) {
           a[index] = "<a href='" + ref + "' target='" + target + "'>" + ref + "</a>";
         } else {
           a[index] = "<a href='http://" + ref + "' target='" + target + "'>" + ref + "</a>";
         }
-
       } else if (part.match(ip4Regex)) {
         let ref = part;
         ref = reverseLinkFormatting(ref);
@@ -314,7 +310,6 @@ function linkfy(text, target) {
       }
     }
   });
-
   a.forEach(function (e) {
     if (e == "") {
       finalText = finalText + " ";
